@@ -8,19 +8,16 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.os.NetworkOnMainThreadException;
 
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
-import org.ksoap2.transport.HttpTransportSE;
-import org.ksoap2.transport.ServiceConnection;
-import org.ksoap2.transport.ServiceConnectionSE;
-
-import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
     final String LOG_TAG = "myLogs";
+    String res;
     TextView tvName;
 
     @Override
@@ -50,15 +47,44 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            tvName.setText(s);
         }
 
         @Override
         protected String doInBackground(Void... voids) {
+            String resultString = "";
+
             try {
                 SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME);
+                //request.addProperty("id", sale.getId());
+                //SimpleDateFormat dateFormat = new SimpleDateFormat(
+                //        "yyyy-MM-dd'T'HH:mm:ss");
+                //request.addProperty("date", dateFormat.format(sale.getDate()));
+                //request.addProperty("clientCardNumber", sale.getCardNumber());
+                //request.addProperty("bonuses", Double.toString(sale.getBonuses()));
+                //...
+                //
+                // see - http://code.google.com/p/ksoap2-android/wiki/CodingTipsAndTricks#Adding_an_array_of_complex_objects_to_the_request
+                //SoapObject sales = new SoapObject(NAMESPACE, "items");
+                //for (SaleItemInformation item : sale.getSales()) {
+                //    SoapObject itemSoap = new SoapObject(NAMESPACE, "Items");
+                //    itemSoap.addProperty("Code", item.getItem().getSourceCode());
+                //    itemSoap.addProperty("Quantity", Double.toString(item.getQuantity()));
+                //    //...
+                //    sales.addSoapObject(itemSoap);
+                //}
+                //request.addSoapObject(sales);
+
                 SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(
                         SoapEnvelope.VER12);
-                //request.addProperty("IsFirstReguest", true);
+                // Тоже важный элемент - не выводит типы данных в элементах xml
+                envelope.implicitTypes = true;
                 envelope.setOutputSoapObject(request);
 
                 HttpTransportBasicAuthSE androidHttpTransport = new HttpTransportBasicAuthSE(
@@ -67,10 +93,11 @@ public class MainActivity extends AppCompatActivity {
 
                 try {
                     androidHttpTransport.call(SOAP_ACTION, envelope);
-                    SoapObject resultsRequestSoap = (SoapObject) envelope.bodyIn;
+                    //SoapObject resultsRequestSoap = (SoapObject) envelope.bodyIn;
                     //System.out.println("Response::" + resultsRequestSoap.toString());
-                    //tvName.setText(resultsRequestSoap.toString());
-                    Log.d(LOG_TAG, resultsRequestSoap.toString());
+                    //resultString = resultsRequestSoap.toString();
+                    resultString = envelope.getResponse().toString();
+                    Log.d(LOG_TAG, resultString);
                 } catch (Exception e) {
                     Log.d(LOG_TAG, e.getClass() + " error: " + e.getMessage());
                     e.printStackTrace();
@@ -80,46 +107,7 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            return "";
-        }
-    }
-
-    public class HttpTransportBasicAuthSE extends HttpTransportSE {
-        private String username;
-        private String password;
-
-        /**
-         * Constructor with username and password
-         *
-         * @param url
-         *            The url address of the webservice endpoint
-         * @param username
-         *            Username for the Basic Authentication challenge RFC 2617
-         * @param password
-         *            Password for the Basic Authentication challenge RFC 2617
-         */
-        public HttpTransportBasicAuthSE(String url, String username, String password) {
-            super(url);
-            this.username = username;
-            this.password = password;
-        }
-
-        public ServiceConnection getServiceConnection() throws IOException {
-            ServiceConnectionSE midpConnection = new ServiceConnectionSE(url);
-            addBasicAuthentication(midpConnection);
-            return midpConnection;
-        }
-
-        protected void addBasicAuthentication(ServiceConnection midpConnection) throws IOException {
-            if (username != null && password != null) {
-                StringBuffer buf = new StringBuffer(username);
-                buf.append(':').append(password);
-                byte[] raw = buf.toString().getBytes();
-                buf.setLength(0);
-                buf.append("Basic ");
-                org.kobjects.base64.Base64.encode(raw, 0, raw.length, buf);
-                midpConnection.setRequestProperty("Authorization", buf.toString());
-            }
+            return resultString;
         }
     }
 }
