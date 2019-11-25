@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import org.ksoap2.SoapEnvelope;
@@ -18,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
     final String LOG_TAG = "myLogs";
     String res;
     TextView tvName;
+    EditText etLogin, etPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,18 +27,22 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.main);
 
         tvName = findViewById(R.id.tvName);
+        etLogin = findViewById(R.id.etLogin);
+        etPassword = findViewById(R.id.etPassword);
+
+        //etLogin.setText("wsChangeServis");
 
         Button btnSoap = findViewById(R.id.btnSoap);
         btnSoap.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 DataLoader dl = new DataLoader();
-                dl.execute();
+                dl.execute(etLogin.getText().toString(), etPassword.getText().toString());
             }
         });
     }
 
-    public class DataLoader extends AsyncTask<Void, Void, String> {
+    public class DataLoader extends AsyncTask<String, Integer, String> {
 
         private static final String NAMESPACE = "http://web/tfk/ExchangeTFK";
         private static final String URL = "http://kamaz.ddns.net:10100/testut/ws/ExchangeTFK.1cws";
@@ -56,8 +62,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected String doInBackground(Void... voids) {
+        protected String doInBackground(String... arg) {
             String resultString = "";
+            String LOGIN = "wsChangeServis";//arg[0]
+            String PASSWORD = "Service2018";//arg[1]
+            //Log.d(LOG_TAG, "Login: " + LOGIN);
+            //Log.d(LOG_TAG, "Password: " + PASSWORD);
 
             try {
                 SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME);
@@ -87,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
                 envelope.setOutputSoapObject(request);
 
                 HttpTransportBasicAuthSE androidHttpTransport = new HttpTransportBasicAuthSE(
-                        URL, "wsChangeServis", "Service2018");
+                        URL, LOGIN, PASSWORD);
                 androidHttpTransport.debug = true;
 
                 try {
@@ -96,16 +106,26 @@ public class MainActivity extends AppCompatActivity {
                     //System.out.println("Response::" + resultsRequestSoap.toString());
                     //resultString = resultsRequestSoap.toString();
                     resultString = envelope.getResponse().toString();
-                    Log.d(LOG_TAG, resultString);
                 } catch (Exception e) {
-                    Log.d(LOG_TAG, e.getClass() + " error: " + e.getMessage());
+                    Log.d(LOG_TAG, e.getClass() + " HTTP TRANSPORT error: " + e.getMessage());
+                    resultString = e.getMessage();
                     e.printStackTrace();
                 }
             } catch (Exception e) {
                 Log.d(LOG_TAG, e.getClass() + " error: " + e.getMessage());
+                resultString = e.getMessage();
                 e.printStackTrace();
             }
 
+            int index401 = resultString.indexOf("HTTP status: 401");
+            int indexHost = resultString.indexOf("Unable to resolve host");
+            if (index401 > -1) {
+                resultString = "Не пройдена авторизация";
+            } else if (indexHost > -1) {
+                resultString = "Не найден хост";
+            }
+
+            Log.d(LOG_TAG, "Result: " + resultString);
             return resultString;
         }
     }
