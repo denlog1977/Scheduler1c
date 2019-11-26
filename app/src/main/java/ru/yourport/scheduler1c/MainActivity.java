@@ -10,6 +10,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
@@ -58,7 +60,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            tvName.setText(s);
+            //tvName.setText(s);
+            //Object obj = new JSON
+            //tvName.setText(name);
+
         }
 
         @Override
@@ -66,6 +71,8 @@ public class MainActivity extends AppCompatActivity {
             String resultString = "";
             String LOGIN = "wsChangeServis";//arg[0]
             String PASSWORD = "Service2018";//arg[1]
+            String SOAP_ACTION = "http://web/tfk/ExchangeTFK#ExchangeTFK:Operation";
+            String METHOD_NAME = "Операция";//Выполнить Operation SayHello
             //Log.d(LOG_TAG, "Login: " + LOGIN);
             //Log.d(LOG_TAG, "Password: " + PASSWORD);
 
@@ -90,6 +97,10 @@ public class MainActivity extends AppCompatActivity {
                 //}
                 //request.addSoapObject(sales);
 
+                //SoapObject query = new SoapObject(NAMESPACE, "ПолучитьСписокОбъектовЗапроса");
+                //query.addProperty("Тип", "ЭлектроннаяОчередь");
+                //request.addSoapObject(query);
+
                 SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(
                         SoapEnvelope.VER12);
                 // Тоже важный элемент - не выводит типы данных в элементах xml
@@ -102,9 +113,9 @@ public class MainActivity extends AppCompatActivity {
 
                 try {
                     androidHttpTransport.call(SOAP_ACTION, envelope);
-                    //SoapObject resultsRequestSoap = (SoapObject) envelope.bodyIn;
+                    SoapObject resultsRequestSoap = (SoapObject) envelope.bodyIn;
                     //System.out.println("Response::" + resultsRequestSoap.toString());
-                    //resultString = resultsRequestSoap.toString();
+                    //resultString = "Response::" + resultsRequestSoap.toString();
                     resultString = envelope.getResponse().toString();
                 } catch (Exception e) {
                     Log.d(LOG_TAG, e.getClass() + " HTTP TRANSPORT error: " + e.getMessage());
@@ -125,8 +136,26 @@ public class MainActivity extends AppCompatActivity {
                 resultString = "Не найден хост";
             }
 
+            //System.out.println(resultString);
             Log.d(LOG_TAG, "Result: " + resultString);
             return resultString;
         }
     }
+
+//    public class JsonParser {
+//
+//        public Resultat getResultat(String response) throws JSONException {
+//            JSONObject jsonObject = new JSONObject(s);
+//            String name = jsonObject.getString("Текст");
+//
+//            return new Resultat(name);
+//        }
+//    }
+//
+//    public class Resultat() {
+//        public String string {
+//            return string;
+//        }
+//    }
+
 }
