@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -42,6 +43,10 @@ public class MainActivity extends AppCompatActivity {
                 dl.execute(etLogin.getText().toString(), etPassword.getText().toString());
             }
         });
+    }
+
+    public void clickTest(View view) {
+        Toast.makeText(this, "Тест", Toast.LENGTH_LONG);
     }
 
     public class DataLoader extends AsyncTask<String, Integer, String> {
