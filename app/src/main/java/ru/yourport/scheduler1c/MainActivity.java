@@ -2,14 +2,19 @@ package ru.yourport.scheduler1c;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
+import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.content.Context;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.ArrayAdapter;
+import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -19,14 +24,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
@@ -42,15 +49,21 @@ public class MainActivity extends AppCompatActivity {
     final String ATTRIBUTE_NAME_TIME = "time";
     final String ATTRIBUTE_NAME_CHASSIS = "chassis";
     final String ATTRIBUTE_NAME_IMAGE = "image";
+    final String ATTRIBUTE_NAME_ID = "id";
 
     // картинки для отображения динамики
     final int positive = android.R.drawable.arrow_up_float;
     final int negative = android.R.drawable.arrow_down_float;
 
     // массив имен атрибутов, из которых будут читаться данные
-    String[] from = { ATTRIBUTE_NAME_TIME, ATTRIBUTE_NAME_CHASSIS, ATTRIBUTE_NAME_IMAGE };
+    String[] from = { ATTRIBUTE_NAME_TIME, ATTRIBUTE_NAME_CHASSIS, ATTRIBUTE_NAME_IMAGE,
+            ATTRIBUTE_NAME_ID };
     // массив ID View-компонентов, в которые будут вставлять данные
-    int[] to = { R.id.tvTime, R.id.tvChassis, R.id.ivImg };
+    int[] to = { R.id.tvTime, R.id.tvChassis, R.id.ivImg, R.id.tvID };
+
+    int myYear = 2019;
+    int myMonth = 01;
+    int myDay = 01;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +96,19 @@ public class MainActivity extends AppCompatActivity {
                 dl.execute(etLogin.getText().toString(), etPassword.getText().toString());
             }
         });
+
+        lvMain.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                TextView tvTime = view.findViewById(R.id.tvTime);
+                TextView tvID = view.findViewById(R.id.tvID);
+                String info = "itemClick: position = " + position + ", id = " + id +
+                        ", text = " + tvTime.getText().toString() +
+                        ", id = " + tvID.getText().toString();
+                Log.d(LOG_TAG, info);
+                Toast.makeText(view.getContext(), info, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     public void clickTest(View view) {
@@ -93,15 +119,53 @@ public class MainActivity extends AppCompatActivity {
         ImageView imageView = new ImageView(this);
         imageView.setImageResource(R.mipmap.ic_launcher);
         toastContainer.addView(imageView, 0);
-        toast.show();
+        //toast.show();
 
         Log.d(LOG_TAG, "clickTest");
         //adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
         //lvMain.setAdapter(adapter);
         //adapter.remove();
+
+        showDialog(1);
     }
 
-    public class DataLoader extends AsyncTask<String, Integer, String[]> {
+
+    protected Dialog onCreateDialog(int id) {
+        if (id == 1) {
+
+            Date dateNow = new Date();
+            SimpleDateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd");
+            String sDate = formatDate.format(dateNow);
+            String[] mDate = sDate.split("-");
+            myYear = Integer.parseInt(mDate[0]);
+            myMonth = Integer.parseInt(mDate[1])-1; //месяц нумеруется с нуля
+            myDay = Integer.parseInt(mDate[2]);
+
+            //myMonth = Integer.parseInt(mDate[1]);
+            //Toast.makeText(this, mDate.toString(), Toast.LENGTH_LONG).show();
+            Log.d(LOG_TAG, "mDate = " + mDate.toString() + ", sDate = " + sDate);
+            for (String d : mDate) {
+                Log.d(LOG_TAG, "d = " + d);
+            }
+
+            DatePickerDialog tpd = new DatePickerDialog(this, myCallBack, myYear, myMonth, myDay);
+            return tpd;
+        }
+        return super.onCreateDialog(id);
+    }
+
+    DatePickerDialog.OnDateSetListener myCallBack = new DatePickerDialog.OnDateSetListener() {
+
+        public void onDateSet(DatePicker view, int year, int monthOfYear,
+                              int dayOfMonth) {
+            myYear = year;
+            myMonth = monthOfYear + 1;
+            myDay = dayOfMonth;
+            tvName.setText("Today is " + myDay + "." + myMonth + "." + myYear);
+        }
+    };
+
+    public class DataLoader extends AsyncTask<String, Integer, String[][]> {
 
         private static final String NAMESPACE = "http://web/tfk/ExchangeTFK";
         private static final String URL = "http://kamaz.ddns.net:10100/testut/ws/ExchangeTFK.1cws";
@@ -115,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(String[] s) {
+        protected void onPostExecute(String[][] s) {
             super.onPostExecute(s);
             //tvName.setText(s);
             //Object obj = new JSON
@@ -133,13 +197,14 @@ public class MainActivity extends AppCompatActivity {
             Map<String, Object> m;
             for (int i = 0; i < s.length; i++) {
                 m = new HashMap();
-                m.put(ATTRIBUTE_NAME_TIME, s[i]);
+               m.put(ATTRIBUTE_NAME_ID, s[i][0]);
+                m.put(ATTRIBUTE_NAME_TIME, s[i][1]);
                 m.put(ATTRIBUTE_NAME_CHASSIS, "");
                 m.put(ATTRIBUTE_NAME_IMAGE, positive);
                 data.add(m);
             }
 
-            adapter = new SimpleAdapter(getApplicationContext(), data, R.layout.item, from, to);
+            adapter = new MySimpleAdapter(getApplicationContext(), data, R.layout.item, from, to);
 
             //ImageView imageView = new ImageView(getApplicationContext());
             //imageView.setImageResource(positive);
@@ -151,8 +216,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected String[] doInBackground(String... arg) {
-            String[] resultString = new String[0];
+        protected String[][] doInBackground(String... arg) {
+            String[][] resultString = new String[0][0];
             String ERROR = "";
             String LOGIN = "wsChangeServis";//arg[0]
             String PASSWORD = "Service2018";//arg[1]
@@ -163,6 +228,7 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME);
+                request.addProperty("Запрос", "СписокОрганизаций");
                 //request.addProperty("id", sale.getId());
                 //SimpleDateFormat dateFormat = new SimpleDateFormat(
                 //        "yyyy-MM-dd'T'HH:mm:ss");
@@ -207,16 +273,23 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject jsonObject = new JSONObject(result);
                     JSONArray ja = jsonObject.getJSONArray("МассивОрганизаций");
 
-                    resultString = new String[ja.length()+1];
+                    resultString = new String[ja.length()+1][2];
                     //for (String j : ja) {
                     //
                     //}
-                    resultString[0] = jsonObject.getString("Текст");
+
+                    //Map<String, String> m;
+
+                    resultString[0][1] = jsonObject.getString("Текст");
                     for (int i = 0; i < ja.length(); i++) {
-                        resultString[i+1] = ja.getString(i);
+                        JSONObject joOrg = ja.getJSONObject(i);
+                        String id = joOrg.getString("ID");
+                        String name = joOrg.getString("Наименование");
+                        Log.d(LOG_TAG, "ID = " + id + ", Наименование = " + name);
+
+                        resultString[i+1][0] = id;
+                        resultString[i+1][1] = name;
                     }
-
-
 
                 } catch (Exception e) {
                     Log.d(LOG_TAG, e.getClass() + " HTTP TRANSPORT error: " + e.getMessage());
@@ -242,6 +315,36 @@ public class MainActivity extends AppCompatActivity {
             //System.out.println(resultString);
 
             return resultString;
+        }
+
+        class MySimpleAdapter extends SimpleAdapter {
+
+            public MySimpleAdapter(Context context,
+                                   List<? extends Map<String, ?>> data, int resource,
+                                   String[] from, int[] to) {
+                super(context, data, resource, from, to);
+            }
+
+            @Override
+            public void setViewText(TextView v, String text) {
+                // метод супер-класса, который вставляет текст
+                super.setViewText(v, text);
+                // если нужный нам TextView, то разрисовываем
+                //if (v.getId() == R.id.tvValue) {
+                //    int i = Integer.parseInt(text);
+                //    if (i < 0) v.setTextColor(Color.RED); else
+                //    if (i > 0) v.setTextColor(Color.GREEN);
+                //}
+            }
+
+            @Override
+            public void setViewImage(ImageView v, int value) {
+                // метод супер-класса
+                super.setViewImage(v, value);
+                // разрисовываем ImageView
+                if (value == negative) v.setBackgroundColor(Color.RED); else
+                if (value == positive) v.setBackgroundColor(Color.GREEN);
+            }
         }
     }
 
