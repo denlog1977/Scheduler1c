@@ -96,6 +96,8 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             public void onClick(View v) {
                 DataLoader dl = new DataLoader();
                 dl.execute(etLogin.getText().toString(), etPassword.getText().toString());
+                //String[][] s = dl.getData();
+                //Log.d(LOG_TAG, Integer.toString(s.length));
             }
         });
 
@@ -145,6 +147,12 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         private static final String SOAP_ACTION = "http://web/tfk/ExchangeTFK#ExchangeTFK:SayHello";
         private static final String METHOD_NAME = "SayHello";
 
+        private String[][] resultString = new String[0][0];
+
+        public String[][] getData() {
+            return resultString;
+        }
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -154,6 +162,8 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         @Override
         protected void onPostExecute(String[][] s) {
             super.onPostExecute(s);
+            //res = s.clone();
+
             //tvName.setText(s);
             //Object obj = new JSON
             //tvName.setText(name);
@@ -170,7 +180,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             Map<String, Object> m;
             for (int i = 0; i < s.length; i++) {
                 m = new HashMap();
-               m.put(ATTRIBUTE_NAME_ID, s[i][0]);
+                m.put(ATTRIBUTE_NAME_ID, s[i][0]);
                 m.put(ATTRIBUTE_NAME_TIME, s[i][1]);
                 m.put(ATTRIBUTE_NAME_CHASSIS, "");
                 m.put(ATTRIBUTE_NAME_IMAGE, positive);
