@@ -1,6 +1,7 @@
 package ru.yourport.scheduler1c;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
@@ -31,12 +32,13 @@ import org.ksoap2.serialization.SoapSerializationEnvelope;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener {
 
     final String LOG_TAG = "myLogs";
     String res;
@@ -119,51 +121,22 @@ public class MainActivity extends AppCompatActivity {
         ImageView imageView = new ImageView(this);
         imageView.setImageResource(R.mipmap.ic_launcher);
         toastContainer.addView(imageView, 0);
-        //toast.show();
+        toast.show();
 
         Log.d(LOG_TAG, "clickTest");
         //adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
         //lvMain.setAdapter(adapter);
         //adapter.remove();
 
-        showDialog(1);
+        DialogFragment newFragment = new DatePickerFragment();
+        newFragment.show(getSupportFragmentManager(), "datePicker");
     }
 
+    @Override
+    public void onDateSet(DatePicker view, int year, int month, int day) {
 
-    protected Dialog onCreateDialog(int id) {
-        if (id == 1) {
-
-            Date dateNow = new Date();
-            SimpleDateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd");
-            String sDate = formatDate.format(dateNow);
-            String[] mDate = sDate.split("-");
-            myYear = Integer.parseInt(mDate[0]);
-            myMonth = Integer.parseInt(mDate[1])-1; //месяц нумеруется с нуля
-            myDay = Integer.parseInt(mDate[2]);
-
-            //myMonth = Integer.parseInt(mDate[1]);
-            //Toast.makeText(this, mDate.toString(), Toast.LENGTH_LONG).show();
-            Log.d(LOG_TAG, "mDate = " + mDate.toString() + ", sDate = " + sDate);
-            for (String d : mDate) {
-                Log.d(LOG_TAG, "d = " + d);
-            }
-
-            DatePickerDialog tpd = new DatePickerDialog(this, myCallBack, myYear, myMonth, myDay);
-            return tpd;
-        }
-        return super.onCreateDialog(id);
+        tvName.setText("Today is " + day + "." + (month + 1) + "." + year);
     }
-
-    DatePickerDialog.OnDateSetListener myCallBack = new DatePickerDialog.OnDateSetListener() {
-
-        public void onDateSet(DatePicker view, int year, int monthOfYear,
-                              int dayOfMonth) {
-            myYear = year;
-            myMonth = monthOfYear + 1;
-            myDay = dayOfMonth;
-            tvName.setText("Today is " + myDay + "." + myMonth + "." + myYear);
-        }
-    };
 
     public class DataLoader extends AsyncTask<String, Integer, String[][]> {
 
@@ -365,3 +338,4 @@ public class MainActivity extends AppCompatActivity {
 //    }
 
 }
+
