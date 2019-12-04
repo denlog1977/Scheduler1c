@@ -32,7 +32,6 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
             android:text="08:00"
-            android:textColor="@android:color/widget_edittext_dark"
             android:textSize="22sp" />
 
         <TextView
@@ -44,6 +43,7 @@
             android:text="TextView"
             android:textColor="@android:color/secondary_text_dark"
             android:textStyle="normal" />
+
     </LinearLayout>
 
 </LinearLayout>
