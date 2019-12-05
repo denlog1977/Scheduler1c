@@ -55,6 +55,9 @@ public class DataLoader extends AsyncTask<String, Integer, String[][]>{
         //Log.d(LOG_TAG, "Login: " + LOGIN);
         //Log.d(LOG_TAG, "Password: " + PASSWORD);
 
+
+        SSLConnection.allowAllSSL();
+
         try {
             SoapObject request = new SoapObject(NAMESPACE, METHOD_NAME);
             request.addProperty("Запрос", "СписокОрганизаций");
