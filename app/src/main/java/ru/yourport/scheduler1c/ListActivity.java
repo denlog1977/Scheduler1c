@@ -67,12 +67,6 @@ public class ListActivity extends AppCompatActivity {
 
         lvMain = findViewById(R.id.lvMain);
 
-        dl = new DataLoader();
-        dl.execute();
-        //dl.execute(etLogin.getText().toString(), etPassword.getText().toString());
-
-        showResult();
-
         lvMain.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -85,6 +79,18 @@ public class ListActivity extends AppCompatActivity {
                 Toast.makeText(view.getContext(), info, Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        dl = new DataLoader();
+        dl.execute();
+        //dl.execute(etLogin.getText().toString(), etPassword.getText().toString());
+
+        showResult();
+
     }
 
     private void showResult() {

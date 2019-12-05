@@ -9,6 +9,8 @@ import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 
+import java.util.Date;
+
 public class DataLoader extends AsyncTask<String, Integer, String[][]>{
 
     private static final String NAMESPACE = "http://web/tfk/ExchangeTFK";
@@ -16,17 +18,24 @@ public class DataLoader extends AsyncTask<String, Integer, String[][]>{
     private static final String SOAP_ACTION = "http://web/tfk/ExchangeTFK#ExchangeTFK:SayHello";
     private static final String METHOD_NAME = "Операция";
     private static final String LOG_TAG = "myLogs";
+    private long TimeStart = 0, TimeEnd = 0;
 
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
 
+        Date date = new Date();
+        TimeStart = date.getTime();
     }
 
     @Override
     protected void onPostExecute(String[][] strings) {
         super.onPostExecute(strings);
 
+        Date date = new Date();
+        TimeEnd = date.getTime() - TimeStart;
+
+        Log.d(LOG_TAG, "Результат времени в милисекундах: " + TimeEnd);
     }
 
     @Override
