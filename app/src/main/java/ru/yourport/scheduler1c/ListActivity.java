@@ -90,13 +90,13 @@ public class ListActivity extends AppCompatActivity {
         //dl.execute(etLogin.getText().toString(), etPassword.getText().toString());
 
         showResult();
-
     }
 
     private void showResult() {
         if (dl == null) return;
 
         String[][] result;
+        String ERROR = "";
 
         try {
             Log.d(LOG_TAG, "Try to get result");
@@ -104,12 +104,21 @@ public class ListActivity extends AppCompatActivity {
             Log.d(LOG_TAG, "get returns " + result.length);
             //Toast.makeText(this, "get returns " + result.length, Toast.LENGTH_LONG).show();
         } catch (InterruptedException e) {
+            ERROR = e.getMessage();
+            Toast.makeText(this, "Ошибка: " + ERROR, Toast.LENGTH_LONG).show();
             e.printStackTrace();
             return;
         } catch (ExecutionException e) {
+            ERROR = e.getMessage();
+            Toast.makeText(this, "Ошибка: " + ERROR, Toast.LENGTH_LONG).show();
             e.printStackTrace();
             return;
         }
+        ERROR = dl.getERROR();
+        Toast.makeText(this, "Ошибка: " + ERROR, Toast.LENGTH_LONG).show();
+
+        TextView tvError = findViewById(R.id.tvError);
+        tvError.setText(ERROR);
         //tvName.setText(s);
         //Object obj = new JSON
         //tvName.setText(name);
@@ -162,7 +171,8 @@ public class ListActivity extends AppCompatActivity {
             // метод супер-класса
             super.setViewImage(v, value);
             // разрисовываем ImageView
-            if (value == negative) v.setBackgroundColor(Color.RED); else
+            if (value == negative) v.setBackgroundColor(Color.RED);
+            else
             if (value == positive) v.setBackgroundColor(Color.GREEN);
             v.setVisibility(View.GONE);
         }

@@ -2,6 +2,7 @@ package ru.yourport.scheduler1c;
 
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -14,11 +15,16 @@ import java.util.Date;
 public class DataLoader extends AsyncTask<String, Integer, String[][]>{
 
     private static final String NAMESPACE = "http://web/tfk/ExchangeTFK";
-    private static final String URL = "http://kamaz.ddns.net:10100/testut/ws/ExchangeTFK.1cws";
+    private static final String URL = "https://kamaz.ddns.net:10100/testut/ws/ExchangeTFK.1cws";
     private static final String SOAP_ACTION = "http://web/tfk/ExchangeTFK#ExchangeTFK:SayHello";
     private static final String METHOD_NAME = "Операция";
     private static final String LOG_TAG = "myLogs";
     private long TimeStart = 0, TimeEnd = 0;
+    private String ERROR = "";
+
+    public String getERROR() {
+        return ERROR;
+    }
 
     @Override
     protected void onPreExecute() {
@@ -42,7 +48,6 @@ public class DataLoader extends AsyncTask<String, Integer, String[][]>{
     protected String[][] doInBackground(String... strings) {
 
         String[][] resultString = new String[0][0];
-        String ERROR = "";
         String LOGIN = "wsChangeServis";//arg[0]
         String PASSWORD = "Service2018";//arg[1]
         //String SOAP_ACTION = "http://web/tfk/ExchangeTFK#ExchangeTFK:Operation";
@@ -120,6 +125,7 @@ public class DataLoader extends AsyncTask<String, Integer, String[][]>{
             } catch (Exception e) {
                 Log.d(LOG_TAG, e.getClass() + " HTTP TRANSPORT error: " + e.getMessage());
                 ERROR = e.getMessage();
+
                 e.printStackTrace();
             }
         } catch (Exception e) {
